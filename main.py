@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import math
 import copy
+import os 
 
 
 class Event():
@@ -26,10 +27,11 @@ def getRand_Exp(l):
 
 def getRand_Norm(m, b):
     sum = 0
-    for n in range (1,500):
+    for n in range(0,500):
         rand = np.random.uniform(low=0.0, high=1.0, size=None) #base generator
-        sum+= (rand - n/2)
-    z = math.sqrt((500/12))
+        sum+= rand
+    
+    z = (sum-250)/math.sqrt((500/12))
     return z*b+m
 
 
@@ -49,6 +51,21 @@ def getRand_Norm(m, b):
     #       get last enetered from queue
     #       if J1:
     #           ev="J1", S=1, St=time+P1, n-1, q-1
+
+def makeSamples():
+    exp1 = []
+    exp2 = []
+    norm1 = []
+    norm2 = []
+    for i in range (0,500):
+        exp1.append(getRand_Exp(1.5))
+        exp2.append(getRand_Exp(4))
+        norm1.append(getRand_Norm(2,0.3))
+        norm2.append(getRand_Norm(2.5,0.5))
+    
+    df_random_check = pd.DataFrame(list(zip(exp1, exp2, norm1, norm2)),
+                            columns =['Exp1', 'Exp2', 'Norm1', 'Norm2'])
+    df_random_check.to_csv('CSV/rand_check.csv')
 
 def eventLoop():
     end_time = 30 #in minutes
@@ -123,10 +140,17 @@ def eventLoop():
 def main():
     events = eventLoop()
     df = pd.DataFrame([x.as_dict() for x in events])
-    print(df)
-    import os  
+    print(df) 
 
     os.makedirs('CSV', exist_ok=True)  
     df.to_csv('CSV/out.csv')  
 
+    makeSamples()
+
+
+
 main()
+
+
+
+
