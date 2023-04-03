@@ -1,5 +1,5 @@
 import numpy as np
-from functools import reduce
+import pandas as pd
 import math
 import copy
 
@@ -12,16 +12,16 @@ class Event():
         self.J2 = J2
         self.St = St
         self.S = S
-        self.q_len = n
+        self.n = n
         self.Q = Q
 
     def as_dict(self):
-        return {'Event': self.ev, 'System time': self.time, 'J1 arrival': self.J1, 'J2 arrival': self.J2, 'Server job completion time': self.St, 'Server status': self.S, 'Queue': self.Q, 'Queue length': self.q_len}
+        return {'Event': self.ev, 'System time': self.time, 'J1 arrival': self.J1, 'J2 arrival': self.J2, 'Server job completion time': self.St, 'Server status': self.S, 'Queue': self.Q, 'Queue length': self.n}
 
 
 def getRand_Exp(l):
     rand = np.random.uniform(low=0.0, high=1.0, size=None) #base generator
-    num = (-4/l)*math.log((1-rand))  #natural log
+    num = (-1/l)*math.log((1-rand))  #natural log
     return round(num,2)
 
 def getRand_Norm(m, b):
@@ -49,6 +49,7 @@ def getRand_Norm(m, b):
     #       get last enetered from queue
     #       if J1:
     #           ev="J1", S=1, St=time+P1, n-1, q-1
+
 def eventLoop():
     end_time = 30 #in minutes
     sys_time = 0
@@ -120,8 +121,6 @@ def eventLoop():
     return events       
 
 def main():
-
-    import pandas as pd
     events = eventLoop()
     df = pd.DataFrame([x.as_dict() for x in events])
     print(df)
