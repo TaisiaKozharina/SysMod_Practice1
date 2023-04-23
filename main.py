@@ -2,8 +2,7 @@ import numpy as np
 import pandas as pd
 import math
 import copy
-import os 
-
+import os
 
 class Event():
     def __init__(self, ev, time, J1, J2, St, S, n, Q):
@@ -68,7 +67,7 @@ def makeSamples():
     df_random_check.to_csv('CSV/rand_check.csv')
 
 def eventLoop():
-    end_time = 30 #in minutes
+    end_time = 500 #in seconds
     sys_time = 0
     #events = []
 
@@ -86,68 +85,87 @@ def eventLoop():
         new_event = copy.deepcopy(events[-1])
 
         # Choosing next event as min(J1_Arrival, J2_Arrival, Server_Job_Completion)
-        print("* Choosing from: J1=" + str(events[-1].J1) + ", J2="+ str(events[-1].J2) +", St="+ str(events[-1].St))
+        #print("* Choosing from: J1=" + str(events[-1].J1) + ", J2="+ str(events[-1].J2) +", St="+ str(events[-1].St))
         next_ev_time = min(events[-1].J1, events[-1].J2, events[-1].St)
-        print("next_ev_time: ", next_ev_time)
-        new_event.time = round(next_ev_time,2)
 
-        if(next_ev_time == events[-1].J1):
-            print("J1 is min")
-            new_event.ev = "J1"
-            new_event.J1 = new_event.time+I1
-            if(events[-1].S==0): 
-                new_event.S = 1
-                new_event.St = next_ev_time+P1
-            else:
-                new_event.Q.append("J1")
-                new_event.n = len(new_event.Q)
-        
-        elif(next_ev_time == events[-1].J2):
-            print("J2 is min")
-            new_event.ev = "J2"
-            new_event.J2 = new_event.time+I2
-            if(events[-1].S==0): 
-                new_event.S = 1
-                new_event.St = next_ev_time+P2
-            else:
-                new_event.Q.append("J2")
-                new_event.n = len(new_event.Q)
+        if(next_ev_time > end_time):
+            new_event.ev = 'Stop'
+            new_event.time = end_time
+            events.append(new_event)
+            break
 
-        elif(next_ev_time == events[-1].St):
-            print("Job completion is min")
-            if(len(events[-1].Q)==0):
-                new_event.ev="Stop of service"
-                new_event.S=0
-                new_event.n=0
-                new_event.Q=[]
-            else:
-                if(events[-1].Q[-1] =="J1"):
-                    new_event.ev="J1"
-                    new_event.St=new_event.time+P1
-                elif(events[-1].Q[-1] =="J2"):
-                    new_event.ev="J2"
-                    new_event.St=new_event.time+P2                   
-                new_event.S=1
-                new_event.n-=1
-                new_event.Q.pop()
+        else:
 
-        events.append(new_event)
-        sys_time=events[-1].time   
-        print("*** System time is currently: ",sys_time)
+            new_event.time = round(next_ev_time,2)
+
+            if(next_ev_time == events[-1].J1):
+                #print("J1 is min")
+                new_event.ev = "J1"
+                new_event.J1 = new_event.time+I1
+                if(events[-1].S==0): 
+                    new_event.S = 1
+                    new_event.St = next_ev_time+P1
+                else:
+                    new_event.Q.append("J1")
+                    new_event.n = len(new_event.Q)
+            
+            elif(next_ev_time == events[-1].J2):
+                #print("J2 is min")
+                new_event.ev = "J2"
+                new_event.J2 = new_event.time+I2
+                if(events[-1].S==0): 
+                    new_event.S = 1
+                    new_event.St = next_ev_time+P2
+                else:
+                    new_event.Q.append("J2")
+                    new_event.n = len(new_event.Q)
+
+            elif(next_ev_time == events[-1].St):
+                #print("Job completion is min")
+                if(len(events[-1].Q)==0):
+                    new_event.ev="Server free"
+                    new_event.S=0
+                    new_event.n=0
+                    new_event.Q=[]
+                else:
+                    if(events[-1].Q[-1] =="J1"):
+                        new_event.ev="J1"
+                        new_event.St=new_event.time+P1
+                    elif(events[-1].Q[-1] =="J2"):
+                        new_event.ev="J2"
+                        new_event.St=new_event.time+P2                   
+                    new_event.S=1
+                    new_event.n-=1
+                    new_event.Q.pop()
+
+            events.append(new_event)
+            sys_time=events[-1].time   
+            #print("*** System time is currently: ",sys_time)
 
     return events       
 
 def main():
     events = eventLoop()
     df = pd.DataFrame([x.as_dict() for x in events])
-    print(df) 
+    print(df)
+
+    #MoE calculations:
+    max_queue = df['Queue length'].max()
+    print("Moe1: Max jobs in queue = ", max_queue)
+
+    dtime_factor = 0
+    indexes = list(filter(lambda i: events[i].S == 0, range(len(events))))
+
+    for i in indexes:
+        dtime_factor+=(events[i+1].time - events[i].time)
+    
+    dtime_factor = (dtime_factor/500)*100
+    print("Moe2: Downtime factor =", dtime_factor, "%")
 
     os.makedirs('CSV', exist_ok=True)  
     df.to_csv('CSV/out.csv')  
 
-    makeSamples()
-
-
+    #makeSamples()
 
 main()
 
