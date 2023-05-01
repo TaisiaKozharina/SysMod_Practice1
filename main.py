@@ -67,7 +67,7 @@ def makeSamples():
     df_random_check.to_csv('CSV/rand_check.csv')
 
 def eventLoop():
-    end_time = 500 #in seconds
+    end_time = 500 #in minutes
     sys_time = 0
     #events = []
 
@@ -128,15 +128,15 @@ def eventLoop():
                     new_event.n=0
                     new_event.Q=[]
                 else:
-                    if(events[-1].Q[-1] =="J1"):
+                    if(events[-1].Q[0] =="J1"):
                         new_event.ev="J1"
                         new_event.St=new_event.time+P1
-                    elif(events[-1].Q[-1] =="J2"):
+                    elif(events[-1].Q[0] =="J2"):
                         new_event.ev="J2"
                         new_event.St=new_event.time+P2                   
                     new_event.S=1
                     new_event.n-=1
-                    new_event.Q.pop()
+                    new_event.Q.pop(0)
 
             events.append(new_event)
             sys_time=events[-1].time   
@@ -158,14 +158,15 @@ def main():
 
     for i in indexes:
         dtime_factor+=(events[i+1].time - events[i].time)
-    
+        
+    print(dtime_factor)
     dtime_factor = (dtime_factor/500)*100
     print("Moe2: Downtime factor =", dtime_factor, "%")
 
     os.makedirs('CSV', exist_ok=True)  
     df.to_csv('CSV/out.csv')  
 
-    #makeSamples()
+    makeSamples()
 
 main()
 
