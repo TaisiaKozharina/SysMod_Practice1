@@ -48,7 +48,7 @@ test_norm <- function(sample, m, b){
   print(chi)
 }
 
-path='C:\\Users\\kozha\\Desktop\\TSI\\SysModelling\\Practice1\\SysMod_Practice1\\CSV\\rand_check.csv'
+path='C:\\Users\\...\\SysMod_Practice1\\CSV\\rand_check.csv'
 df <- read.csv(path)
 head(df)
 
@@ -60,12 +60,21 @@ test_norm(df$Norm2, 2.5, 0.5)
 
 
 #For MoE statistics
-stats <- c(2447, 2461, 2467, 2377, 2517, 2343, 2500, 2416, 2511, 2469)
+stats <- c(2525, 2468, 2535, 2548, 2562, 2478, 2563, 2408, 2649, 2554)
 
 mean(stats)
 median(stats)
 sd(stats)
 t.test(stats)$conf.int
+
+#For Statistical testing / comparison of models
+q1 <- c(2541, 2623, 2538, 2622, 2542, 2652, 2500, 2554, 2415, 2507)
+q2 <- c(2447, 2461, 2467, 2377, 2517, 2343, 2500, 2416, 2511, 2469)
+q3 <- c(2525, 2468, 2535, 2548, 2562, 2478, 2563, 2408, 2649, 2554)
+
+t.test(q1, q2, var.equal = TRUE)
+
+wilcox.test(q1, q2)
 
 
 

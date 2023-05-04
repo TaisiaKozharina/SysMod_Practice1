@@ -51,12 +51,12 @@ def getRand_Norm(m, b):
     #       if J1:
     #           ev="J1", S=1, St=time+P1, n-1, q-1
 
-def makeSamples():
+def makeSamples(n):
     exp1 = []
     exp2 = []
     norm1 = []
     norm2 = []
-    for i in range (0,500):
+    for i in range (0,n):
         exp1.append(getRand_Exp(1.5))
         exp2.append(getRand_Exp(4))
         norm1.append(getRand_Norm(2,0.3))
@@ -85,7 +85,6 @@ def eventLoop():
         new_event = copy.deepcopy(events[-1])
 
         # Choosing next event as min(J1_Arrival, J2_Arrival, Server_Job_Completion)
-        #print("* Choosing from: J1=" + str(events[-1].J1) + ", J2="+ str(events[-1].J2) +", St="+ str(events[-1].St))
         next_ev_time = min(events[-1].J1, events[-1].J2, events[-1].St)
 
         if(next_ev_time > end_time):
@@ -95,12 +94,10 @@ def eventLoop():
             break
 
         else:
-
             new_event.time = round(next_ev_time,2)
-
             if(next_ev_time == events[-1].J1):
-                #print("J1 is min")
-                new_event.ev = "J1"
+
+                new_event.ev = "J1 arrival"
                 new_event.J1 = new_event.time+I1
                 if(events[-1].S==0): 
                     new_event.S = 1
@@ -111,7 +108,7 @@ def eventLoop():
             
             elif(next_ev_time == events[-1].J2):
                 #print("J2 is min")
-                new_event.ev = "J2"
+                new_event.ev = "J2 arrival"
                 new_event.J2 = new_event.time+I2
                 if(events[-1].S==0): 
                     new_event.S = 1
@@ -123,16 +120,16 @@ def eventLoop():
             elif(next_ev_time == events[-1].St):
                 #print("Job completion is min")
                 if(len(events[-1].Q)==0):
-                    new_event.ev="Server free"
+                    new_event.ev="Server Free"
                     new_event.S=0
                     new_event.n=0
                     new_event.Q=[]
                 else:
-                    if(events[-1].Q[0] =="J1"):
-                        new_event.ev="J1"
+                    if(events[-1].Q[0] =="J1 arrival"):
+                        new_event.ev="J1 processing"
                         new_event.St=new_event.time+P1
-                    elif(events[-1].Q[0] =="J2"):
-                        new_event.ev="J2"
+                    elif(events[-1].Q[0] =="J2 arrival"):
+                        new_event.ev="J2 processing"
                         new_event.St=new_event.time+P2                   
                     new_event.S=1
                     new_event.n-=1
@@ -140,7 +137,6 @@ def eventLoop():
 
             events.append(new_event)
             sys_time=events[-1].time   
-            #print("*** System time is currently: ",sys_time)
 
     return events       
 
@@ -158,18 +154,14 @@ def main():
 
     for i in indexes:
         dtime_factor+=(events[i+1].time - events[i].time)
-        
-    print(dtime_factor)
-    dtime_factor = (dtime_factor/500)*100
+
+    dtime_factor = (dtime_factor/500)*100 #To percentage
     print("Moe2: Downtime factor =", dtime_factor, "%")
 
     os.makedirs('CSV', exist_ok=True)  
     df.to_csv('CSV/out.csv')  
 
-    makeSamples()
+    #🔽 UNCOMMENT IF SAMPLES FOR TESTING ARE NEEDED 
+    #makeSamples(500)
 
 main()
-
-
-
-
